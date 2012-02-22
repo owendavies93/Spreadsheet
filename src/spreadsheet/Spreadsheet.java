@@ -1,7 +1,10 @@
 package spreadsheet;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+
 import spreadsheet.api.CellLocation;
 import spreadsheet.api.SpreadsheetInterface;
 import spreadsheet.api.value.*;
@@ -10,6 +13,8 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     private Map<CellLocation, Cell> locations =
             new HashMap<CellLocation, Cell>();
+
+    private Set<Cell> changed = new HashSet<Cell>();
 
     @Override
     public void setExpression(CellLocation location, String expr) {
@@ -41,4 +46,9 @@ public class Spreadsheet implements SpreadsheetInterface {
         // TODO Auto-generated method stub
 
     }
+
+    public Set<Cell> getChanged() {
+        return changed;
+    }
+
 }
