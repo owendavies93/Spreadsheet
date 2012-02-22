@@ -2,6 +2,7 @@ package spreadsheet;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +19,8 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     @Override
     public void setExpression(CellLocation location, String expr) {
-        if (locations.get(location) != null) {
-            Cell c = locations.get(location);
+        if (getCellAt(location) != null) {
+            Cell c = getCellAt(location);
             c.setExpr(expr);
             c.setVal(new StringValue(expr));
         } else {
@@ -31,24 +32,35 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     @Override
     public String getExpression(CellLocation location) {
-        Cell c = locations.get(location);
+        Cell c = getCellAt(location);
         return c != null ? c.getExpr() : "";
     }
 
     @Override
     public Value getValue(CellLocation location) {
-        Cell c = locations.get(location);
+        Cell c = getCellAt(location);
         return c != null ? c.getVal() : new InvalidValue("");
     }
 
     @Override
     public void recompute() {
-        // TODO Auto-generated method stub
+        Iterator<Cell> i = changed.iterator();
+
+        while (i.hasNext()) {
+            Cell c = i.next();
+            String expr = c.getExpr();
+            c.setVal(new StringValue(expr));
+            changed.remove(c);
+        }
 
     }
 
     public Set<Cell> getChanged() {
         return changed;
+    }
+
+    public Cell getCellAt(CellLocation location) {
+        return locations.get(location);
     }
 
 }

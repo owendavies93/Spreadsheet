@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
+import spreadsheet.api.ExpressionUtils;
 import spreadsheet.api.observer.Observer;
 import spreadsheet.api.value.InvalidValue;
 import spreadsheet.api.value.Value;
@@ -46,16 +47,42 @@ public class Cell implements Observer<Cell> {
         while (i.hasNext()) {
             i.next().removeObserver(this);
         }
-    }
 
-    private void removeObserver(Observer<Cell> observer) {
-        references.remove(observer);
+        this.expr = expr;
+        setVal(new InvalidValue(expr));
+
+        addToComputeSet();
+
+        Set<CellLocation> locs = ExpressionUtils.getReferencedLocations(expr);
+        Iterator<CellLocation> j = locs.iterator();
+
+        while (j.hasNext()) {
+            CellLocation l = j.next();
+            sheet.setExpression(l, sheet.getExpression(l));
+
+            Cell c = sheet.getCellAt(l);
+            referees.add(c);
+            c.subscribeToChanges(this);
+        }
+
+        Iterator<Observer<Cell>> k = references.iterator();
+
+        while (k.hasNext()) {
+            k.next().update(this);
+        }
     }
 
     @Override
     public void update(Cell changed) {
-        // TODO Auto-generated method stub
+        if (!changed.isInComputeSet()) {
+            changed.addToComputeSet();
+            changed.setVal(new InvalidValue(changed.getExpr()));
 
+            Iterator<Observer<Cell>> i = changed.references.iterator();
+            while (i.hasNext()) {
+                i.next().update(changed);
+            }
+        }
     }
 
     public void addToComputeSet() {
@@ -64,6 +91,14 @@ public class Cell implements Observer<Cell> {
 
     public boolean isInComputeSet() {
         return sheet.getChanged().contains(this);
+    }
+
+    private void subscribeToChanges(Cell c) {
+        this.references.add(c);
+    }
+
+    private void removeObserver(Observer<Cell> observer) {
+        references.remove(observer);
     }
 
 }
