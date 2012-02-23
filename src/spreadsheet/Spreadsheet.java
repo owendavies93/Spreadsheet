@@ -39,7 +39,7 @@ public class Spreadsheet implements SpreadsheetInterface {
     @Override
     public Value getValue(CellLocation location) {
         Cell c = getCellAt(location);
-        return c != null ? c.getVal() : new InvalidValue("");
+        return c != null ? c.getVal() : null;
     }
 
     @Override
@@ -50,7 +50,7 @@ public class Spreadsheet implements SpreadsheetInterface {
             Cell c = i.next();
             String expr = c.getExpr();
             c.setVal(new StringValue(expr));
-            changed.remove(c);
+            i.remove();
         }
 
     }

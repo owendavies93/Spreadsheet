@@ -25,8 +25,9 @@ public class Cell implements Observer<Cell> {
     public Cell(Spreadsheet sheet, CellLocation loc, String expr) {
         this.sheet = sheet;
         this.loc = loc;
-        this.setVal(new InvalidValue(""));
+        this.setVal(null);
         this.setExpr(expr);
+        System.out.println("New cell at " + loc + " with (" + expr + ")");
     }
 
     public Value getVal() {
@@ -42,10 +43,8 @@ public class Cell implements Observer<Cell> {
     }
 
     public void setExpr(String expr) {
-        Iterator<Cell> i = referees.iterator();
-
-        while (i.hasNext()) {
-            i.next().removeObserver(this);
+        for (Cell c : referees) {
+            c.removeObserver(this);
         }
 
         this.expr = expr;
@@ -54,10 +53,8 @@ public class Cell implements Observer<Cell> {
         addToComputeSet();
 
         Set<CellLocation> locs = ExpressionUtils.getReferencedLocations(expr);
-        Iterator<CellLocation> j = locs.iterator();
 
-        while (j.hasNext()) {
-            CellLocation l = j.next();
+        for (CellLocation l : locs) {
             sheet.setExpression(l, sheet.getExpression(l));
 
             Cell c = sheet.getCellAt(l);
@@ -65,10 +62,8 @@ public class Cell implements Observer<Cell> {
             c.subscribeToChanges(this);
         }
 
-        Iterator<Observer<Cell>> k = references.iterator();
-
-        while (k.hasNext()) {
-            k.next().update(this);
+        for (Observer<Cell> c : references) {
+            c.update(this);
         }
     }
 

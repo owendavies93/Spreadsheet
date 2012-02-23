@@ -129,6 +129,7 @@ public final class SpreadsheetGUI extends JFrame {
                             "Invalid Command Sequence Entered!", "Input Error",
                             JOptionPane.ERROR_MESSAGE);
                     expressionInput.selectAll();
+                    e.printStackTrace();
                 }
             }
         };
@@ -136,13 +137,14 @@ public final class SpreadsheetGUI extends JFrame {
         expressionButton.addActionListener(textListener);
 
         // create the table
-        tableModel = new SpreadsheetTableModel(spreadsheet, numberOfRows,
-                numberOfColumns);
+        tableModel =
+                new SpreadsheetTableModel(spreadsheet, numberOfRows,
+                        numberOfColumns);
         table = new JTable(tableModel);
         table.setAutoCreateColumnsFromModel(false);
 
-        SpreadsheetCellEditor sce = new SpreadsheetCellEditor(new JTextField(),
-                spreadsheet);
+        SpreadsheetCellEditor sce =
+                new SpreadsheetCellEditor(new JTextField(), spreadsheet);
 
         sce.addCellEditorListener(new CellEditorListener() {
             public void editingCanceled(javax.swing.event.ChangeEvent e) {
