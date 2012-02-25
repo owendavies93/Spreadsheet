@@ -3,6 +3,7 @@ package spreadsheet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,18 @@ public class Spreadsheet implements SpreadsheetInterface {
             c.setVal(new StringValue(c.getExpr()));
             i.remove();
         }
+    }
+
+    private void recomputeCell(Cell c) {
+
+    }
+
+    private void checkLoops(Cell c, LinkedHashSet<Cell> cellsseen) {
+
+    }
+
+    private void markAsLoop(Cell startCell, LinkedHashSet<Cell> cells) {
+
     }
 
     public Set<Cell> getInvalid() {
