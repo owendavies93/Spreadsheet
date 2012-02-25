@@ -23,7 +23,9 @@ public class Spreadsheet implements SpreadsheetInterface {
     public void setExpression(CellLocation location, String expr) {
         if (getCellAt(location) != null) {
             Cell c = getCellAt(location);
-            c.setExpr(expr);
+            if (!invalid.contains(c)) {
+                c.setExpr(expr);
+            }
             c.setVal(new InvalidValue(expr)); // You changed this
         } else {
             Cell c = new Cell(this, location);

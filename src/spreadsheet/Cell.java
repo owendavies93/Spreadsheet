@@ -49,9 +49,6 @@ public class Cell implements Observer<Cell> {
         thisReferences.clear();
 
         this.expr = newExpr;
-
-        // TODO - getting infinite loop on cycle here
-
         setVal(new InvalidValue(newExpr));
         addToInvalid();
 
@@ -64,6 +61,7 @@ public class Cell implements Observer<Cell> {
             Cell c = sheet.getCellAt(l);
             thisReferences.add(c);
             c.referencesMe.add(this);
+
         }
 
         for (Observer<Cell> c : referencesMe) {
