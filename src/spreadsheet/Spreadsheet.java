@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
+import spreadsheet.api.ExpressionUtils;
 import spreadsheet.api.SpreadsheetInterface;
 import spreadsheet.api.value.*;
 
@@ -49,21 +50,40 @@ public class Spreadsheet implements SpreadsheetInterface {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            c.setVal(new StringValue(c.getExpr()));
+            recomputeCell(c);
             i.remove();
         }
     }
 
     private void recomputeCell(Cell c) {
-
+        LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
+        seen.add(c);
+        checkLoops(c, seen);
+        if (c.getVal() != LoopValue.INSTANCE) {
+            c.setVal(new StringValue(c.getExpr()));
+        }
     }
 
-    private void checkLoops(Cell c, LinkedHashSet<Cell> cellsseen) {
+    private void checkLoops(Cell c, LinkedHashSet<Cell> cellsSeen) {
+        Set<CellLocation> locs =
+                ExpressionUtils.getReferencedLocations(c.getExpr());
 
+        for (CellLocation l : locs) {
+            Cell child = getCellAt(l);
+            if (cellsSeen.contains(child)) {
+                markAsLoop(child, cellsSeen);
+            } else {
+                cellsSeen.add(child);
+                checkLoops(child, cellsSeen);
+            }
+        }
     }
 
     private void markAsLoop(Cell startCell, LinkedHashSet<Cell> cells) {
-
+        invalid.removeAll(cells);
+        startCell.setVal(LoopValue.INSTANCE);
+        // TODO - gives all the cells in cell from startCell (inclusive) a
+        // LoopValue
     }
 
     public Set<Cell> getInvalid() {

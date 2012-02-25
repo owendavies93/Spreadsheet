@@ -49,6 +49,9 @@ public class Cell implements Observer<Cell> {
         thisReferences.clear();
 
         this.expr = newExpr;
+
+        // TODO - getting infinite loop on cycle here
+
         setVal(new InvalidValue(newExpr));
         addToInvalid();
 
@@ -56,8 +59,8 @@ public class Cell implements Observer<Cell> {
                 ExpressionUtils.getReferencedLocations(newExpr);
 
         for (CellLocation l : locs) {
-            sheet.setExpression(l, sheet.getExpression(l)); // perhaps this is
-                                                            // wrong
+            sheet.setExpression(l, sheet.getExpression(l)); // perhaps this
+                                                            // is wrong
             Cell c = sheet.getCellAt(l);
             thisReferences.add(c);
             c.referencesMe.add(this);
