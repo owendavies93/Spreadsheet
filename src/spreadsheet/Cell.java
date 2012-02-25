@@ -1,7 +1,6 @@
 package spreadsheet;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
@@ -18,16 +17,17 @@ public class Cell implements Observer<Cell> {
     private Value val;
     private String expr;
 
-    private final Set<Cell> referees = new HashSet<Cell>();
-    private final Set<Observer<Cell>> references =
-            new HashSet<Observer<Cell>>();
+    // What do I depend on?
+    private Set<Cell> thisReferences = new HashSet<Cell>();
 
-    public Cell(Spreadsheet sheet, CellLocation loc, String expr) {
+    // What depends on me?
+    private Set<Observer<Cell>> referencesMe = new HashSet<Observer<Cell>>();
+
+    public Cell(Spreadsheet sheet, CellLocation loc) {
         this.sheet = sheet;
         this.loc = loc;
         this.setVal(null);
-        this.setExpr(expr);
-        System.out.println("New cell at " + loc + " with (" + expr + ")");
+        this.setExpr("");
     }
 
     public Value getVal() {
@@ -42,58 +42,54 @@ public class Cell implements Observer<Cell> {
         return expr;
     }
 
-    public void setExpr(String expr) {
-        for (Cell c : referees) {
-            c.removeObserver(this);
+    public void setExpr(String newExpr) {
+        for (Cell c : thisReferences) {
+            c.referencesMe.remove(this);
         }
+        thisReferences.clear();
 
-        this.expr = expr;
-        setVal(new InvalidValue(expr));
+        this.expr = newExpr;
+        setVal(new InvalidValue(newExpr));
+        addToInvalid();
 
-        addToComputeSet();
-
-        Set<CellLocation> locs = ExpressionUtils.getReferencedLocations(expr);
+        Set<CellLocation> locs =
+                ExpressionUtils.getReferencedLocations(newExpr);
 
         for (CellLocation l : locs) {
-            sheet.setExpression(l, sheet.getExpression(l));
-
+            sheet.setExpression(l, sheet.getExpression(l)); // perhaps this is
+                                                            // wrong
             Cell c = sheet.getCellAt(l);
-            referees.add(c);
-            c.subscribeToChanges(this);
+            thisReferences.add(c);
+            c.referencesMe.add(this);
         }
 
-        for (Observer<Cell> c : references) {
+        for (Observer<Cell> c : referencesMe) {
             c.update(this);
         }
     }
 
+    public boolean isInInvalidSet() {
+        return sheet.getInvalid().contains(this);
+    }
+
+    public void addToInvalid() {
+        sheet.getInvalid().add(this);
+    }
+
     @Override
     public void update(Cell changed) {
-        if (!changed.isInComputeSet()) {
-            changed.addToComputeSet();
+        if (!isInInvalidSet()) {
+            changed.addToInvalid();
             changed.setVal(new InvalidValue(changed.getExpr()));
 
-            Iterator<Observer<Cell>> i = changed.references.iterator();
-            while (i.hasNext()) {
-                i.next().update(changed);
+            for (Observer<Cell> obs : referencesMe) {
+                obs.update(changed);
             }
         }
     }
 
-    public void addToComputeSet() {
-        sheet.getChanged().add(this);
-    }
-
-    public boolean isInComputeSet() {
-        return sheet.getChanged().contains(this);
-    }
-
-    private void subscribeToChanges(Cell c) {
-        this.references.add(c);
-    }
-
-    private void removeObserver(Observer<Cell> observer) {
-        references.remove(observer);
+    public String toString() {
+        return "(" + loc + " -> " + val.toString() + ")";
     }
 
 }

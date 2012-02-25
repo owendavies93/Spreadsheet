@@ -15,17 +15,18 @@ public class Spreadsheet implements SpreadsheetInterface {
     private Map<CellLocation, Cell> locations =
             new HashMap<CellLocation, Cell>();
 
-    private Set<Cell> changed = new HashSet<Cell>();
+    private Set<Cell> invalid = new HashSet<Cell>();
 
     @Override
     public void setExpression(CellLocation location, String expr) {
         if (getCellAt(location) != null) {
             Cell c = getCellAt(location);
             c.setExpr(expr);
-            c.setVal(new StringValue(expr));
+            c.setVal(new InvalidValue(expr)); // You changed this
         } else {
-            Cell c = new Cell(this, location, expr);
-            c.setVal(new StringValue(expr));
+            Cell c = new Cell(this, location);
+            c.setExpr(expr);
+            c.setVal(new InvalidValue(expr)); // and this
             locations.put(location, c);
         }
     }
@@ -44,23 +45,20 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     @Override
     public void recompute() {
-        Iterator<Cell> i = changed.iterator();
-
+        Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            String expr = c.getExpr();
-            c.setVal(new StringValue(expr));
+            c.setVal(new StringValue(c.getExpr()));
             i.remove();
         }
-
     }
 
-    public Set<Cell> getChanged() {
-        return changed;
+    public Set<Cell> getInvalid() {
+        return invalid;
     }
 
-    public Cell getCellAt(CellLocation location) {
-        return locations.get(location);
+    public Cell getCellAt(CellLocation loc) {
+        return locations.get(loc);
     }
 
 }
