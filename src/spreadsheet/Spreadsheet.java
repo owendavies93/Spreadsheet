@@ -48,7 +48,6 @@ public class Spreadsheet implements SpreadsheetInterface {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            System.out.println(c);
             c.setVal(new StringValue(c.getExpr()));
             i.remove();
         }
