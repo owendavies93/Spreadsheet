@@ -195,6 +195,7 @@ public final class SpreadsheetGUI extends JFrame {
             spreadsheet.recompute();
             tableModel.fireTableDataChanged();
         } catch (Exception e) {
+            e.printStackTrace();
             JOptionPane.showMessageDialog(SpreadsheetGUI.this,
                     "Invalid Command Encountered!", "Input Error",
                     JOptionPane.ERROR_MESSAGE);

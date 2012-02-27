@@ -89,6 +89,14 @@ public class Cell implements Observer<Cell> {
         }
     }
 
+    public Set<Cell> getReferences() {
+        return thisReferences;
+    }
+
+    public CellLocation getLoc() {
+        return loc;
+    }
+
     public String toString() {
         return "(" + loc + " -> " + val.toString() + ")";
     }
