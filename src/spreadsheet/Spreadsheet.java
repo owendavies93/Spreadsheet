@@ -18,6 +18,8 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     private Set<Cell> invalid = new HashSet<Cell>();
 
+    private Set<Cell> ignore = new HashSet<Cell>();
+
     @Override
     public void setExpression(CellLocation location, String expr) {
         if (getCellAt(location) != null) {
@@ -25,11 +27,11 @@ public class Spreadsheet implements SpreadsheetInterface {
             if (!invalid.contains(c)) {
                 c.setExpr(expr);
             }
-            c.setVal(new InvalidValue(expr)); // You changed this
+            c.setVal(new InvalidValue(expr));
         } else {
             Cell c = new Cell(this, location);
             c.setExpr(expr);
-            c.setVal(new InvalidValue(expr)); // and this
+            c.setVal(new InvalidValue(expr));
             locations.put(location, c);
         }
     }
@@ -60,7 +62,11 @@ public class Spreadsheet implements SpreadsheetInterface {
         LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
         checkLoops(c, seen);
         if (c.getVal() != LoopValue.INSTANCE) {
-            c.setVal(new StringValue(c.getExpr()));
+            if (!ignore.contains(c)) {
+                c.setVal(new StringValue(c.getExpr()));
+            } else {
+                c.setVal(new InvalidValue(c.getExpr()));
+            }
         }
     }
 
@@ -77,11 +83,11 @@ public class Spreadsheet implements SpreadsheetInterface {
     }
 
     private void markAsLoop(Cell startCell, LinkedHashSet<Cell> cells) {
-        // invalid.removeAll(cells);
         startCell.setVal(LoopValue.INSTANCE);
 
         boolean seenStart = false;
         for (Cell c : cells) {
+            ignore.add(c); // not sure if this will "remove" cells from invalid
             if (c.getLoc().equals(startCell.getLoc())) {
                 seenStart = true;
             }

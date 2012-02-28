@@ -27,7 +27,7 @@ public class Cell implements Observer<Cell> {
         this.sheet = sheet;
         this.loc = loc;
         this.setVal(null);
-        this.setExpr("");
+        this.expr = "";
     }
 
     public Value getVal() {
@@ -48,6 +48,9 @@ public class Cell implements Observer<Cell> {
         }
         thisReferences.clear();
 
+        System.out.println("Change " + expr + " to " + newExpr + " at "
+                + getLoc());
+
         this.expr = newExpr;
         setVal(new InvalidValue(newExpr));
         addToInvalid();
@@ -56,8 +59,8 @@ public class Cell implements Observer<Cell> {
                 ExpressionUtils.getReferencedLocations(newExpr);
 
         for (CellLocation l : locs) {
-            sheet.setExpression(l, sheet.getExpression(l)); // perhaps this
-                                                            // is wrong
+            sheet.setExpression(l, sheet.getExpression(l));
+
             Cell c = sheet.getCellAt(l);
             thisReferences.add(c);
             c.referencesMe.add(this);
