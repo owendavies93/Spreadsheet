@@ -9,7 +9,10 @@ import java.util.Set;
 
 import spreadsheet.api.CellLocation;
 import spreadsheet.api.SpreadsheetInterface;
-import spreadsheet.api.value.*;
+import spreadsheet.api.value.InvalidValue;
+import spreadsheet.api.value.LoopValue;
+import spreadsheet.api.value.StringValue;
+import spreadsheet.api.value.Value;
 
 public class Spreadsheet implements SpreadsheetInterface {
 
@@ -21,7 +24,7 @@ public class Spreadsheet implements SpreadsheetInterface {
     private Set<Cell> ignore = new HashSet<Cell>();
 
     @Override
-    public void setExpression(CellLocation location, String expr) {
+    public final void setExpression(CellLocation location, String expr) {
         if (getCellAt(location) != null) {
             Cell c = getCellAt(location);
             if (!invalid.contains(c)) {
@@ -37,19 +40,19 @@ public class Spreadsheet implements SpreadsheetInterface {
     }
 
     @Override
-    public String getExpression(CellLocation location) {
+    public final String getExpression(CellLocation location) {
         Cell c = getCellAt(location);
         return c != null ? c.getExpr() : "";
     }
 
     @Override
-    public Value getValue(CellLocation location) {
+    public final Value getValue(CellLocation location) {
         Cell c = getCellAt(location);
         return c != null ? c.getVal() : null;
     }
 
     @Override
-    public void recompute() {
+    public final void recompute() {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
@@ -97,11 +100,11 @@ public class Spreadsheet implements SpreadsheetInterface {
         }
     }
 
-    public Set<Cell> getInvalid() {
+    public final Set<Cell> getInvalid() {
         return invalid;
     }
 
-    public Cell getCellAt(CellLocation loc) {
+    public final Cell getCellAt(CellLocation loc) {
         return locations.get(loc);
     }
 

@@ -30,19 +30,19 @@ public class Cell implements Observer<Cell> {
         this.expr = "";
     }
 
-    public Value getVal() {
+    public final Value getVal() {
         return val;
     }
 
-    public void setVal(Value val) {
+    public final void setVal(Value val) {
         this.val = val;
     }
 
-    public String getExpr() {
+    public final String getExpr() {
         return expr;
     }
 
-    public void setExpr(String newExpr) {
+    public final void setExpr(String newExpr) {
         for (Cell c : thisReferences) {
             c.referencesMe.remove(this);
         }
@@ -72,16 +72,16 @@ public class Cell implements Observer<Cell> {
         }
     }
 
-    public boolean isInInvalidSet() {
+    public final boolean isInInvalidSet() {
         return sheet.getInvalid().contains(this);
     }
 
-    public void addToInvalid() {
+    public final void addToInvalid() {
         sheet.getInvalid().add(this);
     }
 
     @Override
-    public void update(Cell changed) {
+    public final void update(Cell changed) {
         if (!isInInvalidSet()) {
             changed.addToInvalid();
             changed.setVal(new InvalidValue(changed.getExpr()));
@@ -92,15 +92,15 @@ public class Cell implements Observer<Cell> {
         }
     }
 
-    public Set<Cell> getReferences() {
+    public final Set<Cell> getReferences() {
         return thisReferences;
     }
 
-    public CellLocation getLoc() {
+    public final CellLocation getLoc() {
         return loc;
     }
 
-    public String toString() {
+    public final String toString() {
         return "(" + loc + " -> " + val.toString() + ")";
     }
 

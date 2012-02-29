@@ -26,8 +26,8 @@ public class Util {
         try {
             StringTokenizer stStatement = new StringTokenizer(text, ";");
             while (stStatement.hasMoreTokens()) {
-                StringTokenizer stAssignment = new StringTokenizer(stStatement
-                        .nextToken(), "=");
+                StringTokenizer stAssignment =
+                        new StringTokenizer(stStatement.nextToken(), "=");
                 while (stAssignment.hasMoreTokens()) {
                     String left = stAssignment.nextToken().trim();
                     String right = stAssignment.nextToken().trim();
@@ -63,8 +63,9 @@ public class Util {
      * @return <tt>true</tt> if the specified text is a valid cell reference.
      */
     public static boolean isLocation(String text) {
-        if (text == null || text.length() < 2)
+        if (text == null || text.length() < 2) {
             return false;
+        }
 
         try {
             return new Parser(new StringReader(text)).testLocation();
@@ -87,8 +88,9 @@ public class Util {
      */
     public static boolean isFormula(String text) {
 
-        if (text == null || text.length() <= 0)
+        if (text == null || text.length() <= 0) {
             return false;
+        }
 
         try {
             return new Parser(new StringReader(text)).testNumerical();

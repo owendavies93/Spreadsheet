@@ -17,24 +17,25 @@ public class SpreadsheetTableModel implements TableModel, Serializable {
 
     private final int numberOfRows;
     private final int numberOfColumns;
-    
+
     /** List of listeners */
     protected EventListenerList listenerList = new EventListenerList();
 
     private SpreadsheetInterface spreadsheet;
 
-    protected SpreadsheetTableModel(SpreadsheetInterface spreadsheet, int numberOfRows, int numberOfColumns) {
+    protected SpreadsheetTableModel(SpreadsheetInterface spreadsheet,
+            int numberOfRows, int numberOfColumns) {
         this.spreadsheet = spreadsheet;
         this.numberOfRows = numberOfRows;
         this.numberOfColumns = numberOfColumns;
     }
 
-    public Class<?> getColumnClass(int columnIndex) {
+    public final Class<?> getColumnClass(int columnIndex) {
         return Object.class;
     }
 
     @Override
-    public String getColumnName(int columnIndex) {
+    public final String getColumnName(int columnIndex) {
         return convertColumn(columnIndex);
     }
 
@@ -59,9 +60,11 @@ public class SpreadsheetTableModel implements TableModel, Serializable {
     }
 
     private static int getN(int input) {
-        for (int i = 1; i < 15; ++i)
-            if (input < maxLength(i))
+        for (int i = 1; i < 15; ++i) {
+            if (input < maxLength(i)) {
                 return i;
+            }
+        }
 
         return -1;
     }
@@ -69,8 +72,9 @@ public class SpreadsheetTableModel implements TableModel, Serializable {
     // sum of BASE to the power 1 to input
     private static int maxLength(int input) {
         int result = 0;
-        for (int i = 1; i <= input; ++i)
+        for (int i = 1; i <= input; ++i) {
             result += Math.pow(26, i);
+        }
 
         return result;
     }
@@ -95,7 +99,7 @@ public class SpreadsheetTableModel implements TableModel, Serializable {
         String colName = getColumnName(columnIndex);
         if (colName != null) {
             String location = colName + (rowIndex + 1);
-            CellLocation cellReference =  new CellLocation(location);
+            CellLocation cellReference = new CellLocation(location);
             return spreadsheet.getValue(cellReference);
         }
 

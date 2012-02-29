@@ -23,11 +23,11 @@ public class SpreadsheetCellEditor extends DefaultCellEditor {
         this.spreadsheet = spreadsheet;
     }
 
-    public Component getTableCellEditorComponent(JTable table, Object value,
-            boolean isSelected, int row, int column) {
+    public final Component getTableCellEditorComponent(JTable table,
+            Object value, boolean isSelected, int row, int column) {
 
-        String location = SpreadsheetTableModel.convertColumn(column)
-                + (row + 1);
+        String location =
+                SpreadsheetTableModel.convertColumn(column) + (row + 1);
 
         CellLocation reference = new CellLocation(location);
 

@@ -73,8 +73,8 @@ public final class ExpressionUtils {
                 values.put(entry.getKey().toString(), entry.getValue());
             }
 
-            return new DoubleValue(new Parser(new StringReader(expression))
-                    .compute(values));
+            return new DoubleValue(
+                    new Parser(new StringReader(expression)).compute(values));
         } catch (TokenMgrError e) {
             value = new StringValue(expression);
         } catch (ParseException e) {

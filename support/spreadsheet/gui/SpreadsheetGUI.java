@@ -71,7 +71,9 @@ public final class SpreadsheetGUI extends JFrame {
         final JTextField expressionInput = new JTextField();
 
         c.gridx = 1;
-        c.weightx = 0.5;
+
+        final double weight = 0.5;
+        c.weightx = weight;
         bar.add(expressionInput, c);
 
         JButton expressionButton = new JButton("OK");

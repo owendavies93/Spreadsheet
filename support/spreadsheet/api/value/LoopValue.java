@@ -5,11 +5,12 @@ package spreadsheet.api.value;
  */
 public final class LoopValue implements Value {
 
-    public static final LoopValue INSTANCE = new LoopValue(); 
+    public static final LoopValue INSTANCE = new LoopValue();
 
-    private LoopValue() { 
+    private LoopValue() {
         // not visible
     }
+
     @Override
     public void visit(ValueVisitor visit) {
         visit.visitLoop();

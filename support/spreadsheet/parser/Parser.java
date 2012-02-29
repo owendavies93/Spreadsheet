@@ -2814,13 +2814,17 @@ public class Parser implements ParserConstants {
                                                         if (jj_3_127()) {
                                                             jj_scanpos = xsp;
                                                             if (jj_3_128()) {
-                                                                jj_scanpos = xsp;
+                                                                jj_scanpos =
+                                                                        xsp;
                                                                 if (jj_3_129()) {
-                                                                    jj_scanpos = xsp;
+                                                                    jj_scanpos =
+                                                                            xsp;
                                                                     if (jj_3_130()) {
-                                                                        jj_scanpos = xsp;
+                                                                        jj_scanpos =
+                                                                                xsp;
                                                                         if (jj_3_131()) {
-                                                                            jj_scanpos = xsp;
+                                                                            jj_scanpos =
+                                                                                    xsp;
                                                                             if (jj_3_132())
                                                                                 return true;
                                                                         }
@@ -3457,13 +3461,17 @@ public class Parser implements ParserConstants {
                                                         if (jj_3_78()) {
                                                             jj_scanpos = xsp;
                                                             if (jj_3_79()) {
-                                                                jj_scanpos = xsp;
+                                                                jj_scanpos =
+                                                                        xsp;
                                                                 if (jj_3_80()) {
-                                                                    jj_scanpos = xsp;
+                                                                    jj_scanpos =
+                                                                            xsp;
                                                                     if (jj_3_81()) {
-                                                                        jj_scanpos = xsp;
+                                                                        jj_scanpos =
+                                                                                xsp;
                                                                         if (jj_3_82()) {
-                                                                            jj_scanpos = xsp;
+                                                                            jj_scanpos =
+                                                                                    xsp;
                                                                             if (jj_3_83())
                                                                                 return true;
                                                                         }
@@ -3992,13 +4000,17 @@ public class Parser implements ParserConstants {
                                                         if (jj_3_32()) {
                                                             jj_scanpos = xsp;
                                                             if (jj_3_33()) {
-                                                                jj_scanpos = xsp;
+                                                                jj_scanpos =
+                                                                        xsp;
                                                                 if (jj_3_34()) {
-                                                                    jj_scanpos = xsp;
+                                                                    jj_scanpos =
+                                                                            xsp;
                                                                     if (jj_3_35()) {
-                                                                        jj_scanpos = xsp;
+                                                                        jj_scanpos =
+                                                                                xsp;
                                                                         if (jj_3_36()) {
-                                                                            jj_scanpos = xsp;
+                                                                            jj_scanpos =
+                                                                                    xsp;
                                                                             if (jj_3_37())
                                                                                 return true;
                                                                         }
@@ -4608,8 +4620,9 @@ public class Parser implements ParserConstants {
         if (jj_scanpos == jj_lastpos) {
             jj_la--;
             if (jj_scanpos.next == null) {
-                jj_lastpos = jj_scanpos = jj_scanpos.next = token_source
-                        .getNextToken();
+                jj_lastpos =
+                        jj_scanpos =
+                                jj_scanpos.next = token_source.getNextToken();
             } else {
                 jj_lastpos = jj_scanpos = jj_scanpos.next;
             }

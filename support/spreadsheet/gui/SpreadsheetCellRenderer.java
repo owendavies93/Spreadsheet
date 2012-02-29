@@ -55,8 +55,10 @@ public class SpreadsheetCellRenderer extends DefaultTableCellRenderer {
             focusCellBackground = Color.WHITE;
         }
 
+        final int hbg = 238;
+
         if (headerBackground == null) {
-            headerBackground = new Color(238, 238, 238);
+            headerBackground = new Color(hbg, hbg, hbg);
         }
 
         if (tableBackground == null) {
@@ -65,8 +67,9 @@ public class SpreadsheetCellRenderer extends DefaultTableCellRenderer {
 
     }
 
-    public Component getTableCellRendererComponent(JTable table, Object value,
-            boolean isSelected, boolean hasFocus, int row, int column) {
+    public final Component getTableCellRendererComponent(JTable table,
+            Object value, boolean isSelected, boolean hasFocus, int row,
+            int column) {
 
         if (column == 0) {
             value = String.valueOf((row + 1));
@@ -74,8 +77,8 @@ public class SpreadsheetCellRenderer extends DefaultTableCellRenderer {
             setBackground(headerBackground);
             setHorizontalAlignment(JTextField.CENTER);
         } else {
-            String location = SpreadsheetTableModel.convertColumn(column)
-                    + (row + 1);
+            String location =
+                    SpreadsheetTableModel.convertColumn(column) + (row + 1);
             CellLocation reference = new CellLocation(location);
 
             Value v = spreadsheet.getValue(reference);
