@@ -1,5 +1,7 @@
 package spreadsheet;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -8,11 +10,12 @@ import java.util.Map;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
+import spreadsheet.api.ExpressionUtils;
 import spreadsheet.api.SpreadsheetInterface;
 import spreadsheet.api.value.InvalidValue;
 import spreadsheet.api.value.LoopValue;
-import spreadsheet.api.value.StringValue;
 import spreadsheet.api.value.Value;
+import spreadsheet.api.value.ValueVisitor;
 
 public class Spreadsheet implements SpreadsheetInterface {
 
@@ -20,8 +23,6 @@ public class Spreadsheet implements SpreadsheetInterface {
             new HashMap<CellLocation, Cell>();
 
     private Set<Cell> invalid = new HashSet<Cell>();
-
-    private Set<Cell> ignore = new HashSet<Cell>();
 
     @Override
     public final void setExpression(CellLocation location, String expr) {
@@ -53,6 +54,7 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     @Override
     public final void recompute() {
+        System.out.println(invalid);
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
@@ -65,12 +67,74 @@ public class Spreadsheet implements SpreadsheetInterface {
         LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
         checkLoops(c, seen);
         if (c.getVal() != LoopValue.INSTANCE) {
-            if (!ignore.contains(c)) {
-                c.setVal(new StringValue(c.getExpr()));
-            } else {
-                c.setVal(new InvalidValue(c.getExpr()));
+            Set<CellLocation> refs =
+                    ExpressionUtils.getReferencedLocations(c.getExpr());
+
+            for (CellLocation l : refs) {
+                Cell child = getCellAt(l);
+                if (child.getVal() == LoopValue.INSTANCE) {
+                    c.setVal(new InvalidValue(c.getExpr()));
+                    return;
+                }
+            }
+
+            Deque<Cell> q = new ArrayDeque<Cell>();
+            q.addFirst(c);
+
+            while (!q.isEmpty()) {
+                Cell curr = q.removeFirst();
+                Set<CellLocation> currRefs =
+                        ExpressionUtils.getReferencedLocations(curr.getExpr());
+
+                int childrenToAdd = 0;
+
+                for (CellLocation l : currRefs) {
+                    Cell currChild = getCellAt(l);
+                    if (invalid.contains(currChild)) {
+                        childrenToAdd++;
+                        q.addFirst(currChild);
+                    }
+                }
+                q.addLast(curr);
+
+                if (childrenToAdd == 0) {
+                    calculateCellValue(curr, currRefs);
+                    q.remove();
+                }
             }
         }
+    }
+
+    private void calculateCellValue(Cell c, Set<CellLocation> refs) {
+        final Map<CellLocation, Double> vals =
+                new HashMap<CellLocation, Double>();
+
+        for (CellLocation l : refs) {
+            final Cell child = getCellAt(l);
+            System.out.println(child);
+            child.getVal().visit(new ValueVisitor() {
+
+                @Override
+                public void visitDouble(double v) {
+                    vals.put(child.getLoc(), v);
+                }
+
+                @Override
+                public void visitLoop() {
+                }
+
+                @Override
+                public void visitString(String expression) {
+                }
+
+                @Override
+                public void visitInvalid(String expression) {
+                }
+
+            });
+        }
+
+        c.setVal(ExpressionUtils.computeValue(c.getExpr(), vals));
     }
 
     private void checkLoops(Cell c, LinkedHashSet<Cell> cellsSeen) {
@@ -90,7 +154,6 @@ public class Spreadsheet implements SpreadsheetInterface {
 
         boolean seenStart = false;
         for (Cell c : cells) {
-            ignore.add(c); // not sure if this will "remove" cells from invalid
             if (c.getLoc().equals(startCell.getLoc())) {
                 seenStart = true;
             }

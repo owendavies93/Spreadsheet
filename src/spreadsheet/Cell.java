@@ -48,9 +48,6 @@ public class Cell implements Observer<Cell> {
         }
         thisReferences.clear();
 
-        System.out.println("Change " + expr + " to " + newExpr + " at "
-                + getLoc());
-
         this.expr = newExpr;
         setVal(new InvalidValue(newExpr));
         addToInvalid();
