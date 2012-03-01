@@ -103,6 +103,7 @@ public class Spreadsheet implements SpreadsheetInterface {
         if (visited.contains(c)) {
             c.setInLoop(true);
         } else {
+            c.setInLoop(false);
             visited.add(c);
 
             for (Cell child : getChildren(c)) {
