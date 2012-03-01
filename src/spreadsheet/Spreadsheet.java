@@ -54,7 +54,6 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     @Override
     public final void recompute() {
-        System.out.println(invalid);
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
@@ -101,6 +100,10 @@ public class Spreadsheet implements SpreadsheetInterface {
                     calculateCellValue(curr, currRefs);
                     q.remove();
                 }
+
+                // if (q.isEmpty() && childrenToAdd != 0) {
+                // System.out.println("ARGH");
+                // }
             }
         }
     }
@@ -111,7 +114,6 @@ public class Spreadsheet implements SpreadsheetInterface {
 
         for (CellLocation l : refs) {
             final Cell child = getCellAt(l);
-            System.out.println(child);
             child.getVal().visit(new ValueVisitor() {
 
                 @Override
