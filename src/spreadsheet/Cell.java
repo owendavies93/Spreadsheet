@@ -69,7 +69,6 @@ public class Cell implements Observer<Cell> {
         setVal(new InvalidValue(newExpr));
 
         if (!inLoop) {
-
             addToInvalid();
 
             Set<CellLocation> locs =
@@ -81,7 +80,6 @@ public class Cell implements Observer<Cell> {
                 Cell c = sheet.getCellAt(l);
                 thisReferences.add(c);
                 c.referencesMe.add(this);
-
             }
 
             for (Observer<Cell> c : referencesMe) {
