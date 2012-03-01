@@ -1,12 +1,14 @@
 package spreadsheet;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
 import spreadsheet.api.ExpressionUtils;
 import spreadsheet.api.observer.Observer;
 import spreadsheet.api.value.InvalidValue;
+import spreadsheet.api.value.LoopValue;
 import spreadsheet.api.value.Value;
 
 public class Cell implements Observer<Cell> {
@@ -16,11 +18,9 @@ public class Cell implements Observer<Cell> {
 
     private Value val;
     private String expr;
+    private boolean inLoop;
 
-    // What do I depend on?
     private Set<Cell> thisReferences = new HashSet<Cell>();
-
-    // What depends on me?
     private Set<Observer<Cell>> referencesMe = new HashSet<Observer<Cell>>();
 
     public Cell(Spreadsheet sheet, CellLocation loc) {
@@ -28,6 +28,15 @@ public class Cell implements Observer<Cell> {
         this.loc = loc;
         this.setVal(null);
         this.expr = "";
+        this.inLoop = false;
+    }
+
+    public final Set<Cell> getReferences() {
+        return thisReferences;
+    }
+
+    public final CellLocation getLoc() {
+        return loc;
     }
 
     public final Value getVal() {
@@ -35,7 +44,11 @@ public class Cell implements Observer<Cell> {
     }
 
     public final void setVal(Value val) {
-        this.val = val;
+        if (inLoop) {
+            this.val = LoopValue.INSTANCE;
+        } else {
+            this.val = val;
+        }
     }
 
     public final String getExpr() {
@@ -49,56 +62,84 @@ public class Cell implements Observer<Cell> {
         thisReferences.clear();
 
         this.expr = newExpr;
+
+        LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
+        checkLoops(this, seen);
+
         setVal(new InvalidValue(newExpr));
-        addToInvalid();
 
-        Set<CellLocation> locs =
-                ExpressionUtils.getReferencedLocations(newExpr);
+        if (!inLoop) {
 
-        for (CellLocation l : locs) {
-            sheet.setExpression(l, sheet.getExpression(l));
+            addToInvalid();
 
-            Cell c = sheet.getCellAt(l);
-            thisReferences.add(c);
-            c.referencesMe.add(this);
+            Set<CellLocation> locs =
+                    ExpressionUtils.getReferencedLocations(newExpr);
 
-        }
+            for (CellLocation l : locs) {
+                sheet.setExpression(l, sheet.getExpression(l));
 
-        for (Observer<Cell> c : referencesMe) {
-            c.update(this);
+                Cell c = sheet.getCellAt(l);
+                thisReferences.add(c);
+                c.referencesMe.add(this);
+
+            }
+
+            for (Observer<Cell> c : referencesMe) {
+                c.update(this);
+            }
         }
     }
 
-    public final boolean isInInvalidSet() {
-        return sheet.getInvalid().contains(this);
+    private void checkLoops(Cell c, LinkedHashSet<Cell> seen) {
+        if (seen.contains(c)) {
+            markAsLoop(c, seen);
+        } else {
+            seen.add(c);
+            LinkedHashSet<Cell> children = sheet.getChildren(c);
+
+            for (Cell child : children) {
+                checkLoops(child, seen);
+            }
+            seen.remove(c);
+        }
     }
 
-    public final void addToInvalid() {
-        sheet.getInvalid().add(this);
+    private void markAsLoop(Cell cell, LinkedHashSet<Cell> seen) {
+        cell.inLoop = true;
+
+        boolean seenStart = false;
+        for (Cell c : seen) {
+            if (c.getLoc().equals(cell.getLoc())) {
+                seenStart = true;
+            }
+            if (seenStart) {
+                c.inLoop = true;
+            }
+        }
     }
 
     @Override
     public final void update(Cell changed) {
         if (!isInInvalidSet()) {
-            changed.addToInvalid();
-            changed.setVal(new InvalidValue(changed.getExpr()));
+            addToInvalid();
+            setVal(new InvalidValue(getExpr()));
 
             for (Observer<Cell> obs : referencesMe) {
-                obs.update(changed);
+                obs.update(this);
             }
         }
     }
 
-    public final Set<Cell> getReferences() {
-        return thisReferences;
+    private final boolean isInInvalidSet() {
+        return sheet.getInvalid().contains(this);
     }
 
-    public final CellLocation getLoc() {
-        return loc;
+    private final void addToInvalid() {
+        sheet.getInvalid().add(this);
     }
 
     public final String toString() {
-        return "(" + loc + " -> " + val.toString() + ")";
+        return "(" + loc + " -> " + expr + ")";
     }
 
 }

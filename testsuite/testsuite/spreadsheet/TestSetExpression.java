@@ -1,11 +1,16 @@
 package testsuite.spreadsheet;
 
+import static org.junit.Assert.assertEquals;
 import static testsuite.spreadsheet.Util.*;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import org.junit.Test;
 
 import spreadsheet.Spreadsheet;
 import spreadsheet.api.CellLocation;
+import spreadsheet.api.ExpressionUtils;
 
 public class TestSetExpression {
 
@@ -51,4 +56,11 @@ public class TestSetExpression {
         assertIsLoopValue(spreadsheet.getValue(d1));
     }
 
+    @Test
+    public void testUtils1() {
+        Set<CellLocation> refs = new HashSet<CellLocation>();
+        refs.add(c1);
+        refs.add(d1);
+        assertEquals(ExpressionUtils.getReferencedLocations("=c1 + d1"), refs);
+    }
 }
