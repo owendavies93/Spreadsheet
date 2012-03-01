@@ -23,6 +23,7 @@ public class Spreadsheet implements SpreadsheetInterface {
             new HashMap<CellLocation, Cell>();
 
     private Set<Cell> invalid = new HashSet<Cell>();
+    private Set<Cell> ignore = new HashSet<Cell>();
 
     @Override
     public final void setExpression(CellLocation location, String expr) {
@@ -57,20 +58,21 @@ public class Spreadsheet implements SpreadsheetInterface {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            recomputeCell(c);
+            if (!ignore.contains(c)) {
+                recomputeCell(c);
+            }
             i.remove();
         }
+        ignore.clear();
     }
 
     private void recomputeCell(Cell c) {
         LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
         checkLoops(c, seen);
         if (c.getVal() != LoopValue.INSTANCE) {
-            Set<CellLocation> refs =
-                    ExpressionUtils.getReferencedLocations(c.getExpr());
+            LinkedHashSet<Cell> children = getChildren(c);
 
-            for (CellLocation l : refs) {
-                Cell child = getCellAt(l);
+            for (Cell child : children) {
                 if (child.getVal() == LoopValue.INSTANCE) {
                     c.setVal(new InvalidValue(c.getExpr()));
                     return;
@@ -78,42 +80,36 @@ public class Spreadsheet implements SpreadsheetInterface {
             }
 
             Deque<Cell> q = new ArrayDeque<Cell>();
-            q.addFirst(c);
+            q.offer(c);
 
             while (!q.isEmpty()) {
-                Cell curr = q.removeFirst();
-                Set<CellLocation> currRefs =
-                        ExpressionUtils.getReferencedLocations(curr.getExpr());
+                Cell node = q.poll();
+                LinkedHashSet<Cell> nodeChildren = getChildren(node);
 
-                int childrenToAdd = 0;
+                boolean dependantsRecompute = false;
 
-                for (CellLocation l : currRefs) {
-                    Cell currChild = getCellAt(l);
-                    if (invalid.contains(currChild)) {
-                        childrenToAdd++;
-                        q.addFirst(currChild);
+                for (Cell child : nodeChildren) {
+                    if (invalid.contains(child) && !ignore.contains(child)) {
+                        q.offer(child);
+                        dependantsRecompute = true;
                     }
                 }
-                q.addLast(curr);
+                q.offer(node);
 
-                if (childrenToAdd == 0) {
-                    calculateCellValue(curr, currRefs);
-                    q.remove();
+                if (!dependantsRecompute) {
+                    calculateCellValue(node);
+                    ignore.add(node);
+                    q.remove(node);
                 }
-
-                // if (q.isEmpty() && childrenToAdd != 0) {
-                // System.out.println("ARGH");
-                // }
             }
         }
     }
 
-    private void calculateCellValue(Cell c, Set<CellLocation> refs) {
+    private void calculateCellValue(Cell c) {
         final Map<CellLocation, Double> vals =
                 new HashMap<CellLocation, Double>();
 
-        for (CellLocation l : refs) {
-            final Cell child = getCellAt(l);
+        for (final Cell child : getChildren(c)) {
             child.getVal().visit(new ValueVisitor() {
 
                 @Override
@@ -153,7 +149,7 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     private void markAsLoop(Cell startCell, LinkedHashSet<Cell> cells) {
         startCell.setVal(LoopValue.INSTANCE);
-
+        ignore.addAll(cells);
         boolean seenStart = false;
         for (Cell c : cells) {
             if (c.getLoc().equals(startCell.getLoc())) {
@@ -171,6 +167,18 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     public final Cell getCellAt(CellLocation loc) {
         return locations.get(loc);
+    }
+
+    private final LinkedHashSet<Cell> getChildren(Cell c) {
+        Set<CellLocation> refs =
+                ExpressionUtils.getReferencedLocations(c.getExpr());
+        LinkedHashSet<Cell> children = new LinkedHashSet<Cell>();
+
+        for (CellLocation l : refs) {
+            children.add(getCellAt(l));
+        }
+
+        return children;
     }
 
 }
