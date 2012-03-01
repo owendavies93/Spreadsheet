@@ -58,14 +58,16 @@ public class Spreadsheet implements SpreadsheetInterface {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            checkCycle(c, new HashSet<Cell>());
 
-            if (!c.isInLoop()) {
-                if (!ignore.contains(c)) {
+            c.setInvalid(false);
+            checkLoops(c, new LinkedHashSet<Cell>());
+
+            if (c.getVal() != LoopValue.INSTANCE) {
+                if (c.alwaysInvalid()) {
+                    c.setVal(new InvalidValue(c.getExpr()));
+                } else if (!ignore.contains(c)) {
                     recomputeCell(c);
                 }
-            } else {
-                c.setVal(LoopValue.INSTANCE);
             }
 
             i.remove();
@@ -99,18 +101,33 @@ public class Spreadsheet implements SpreadsheetInterface {
         }
     }
 
-    private void checkCycle(Cell c, Set<Cell> visited) {
-        if (visited.contains(c)) {
-            c.setInLoop(true);
+    private void checkLoops(Cell c, LinkedHashSet<Cell> cellsSeen) {
+        if (cellsSeen.contains(c)) {
+            markAsLoop(c, cellsSeen);
         } else {
-            c.setInLoop(false);
-            visited.add(c);
+            cellsSeen.add(c);
 
             for (Cell child : getChildren(c)) {
-                checkCycle(child, visited);
+                checkLoops(child, cellsSeen);
             }
 
-            visited.remove(c);
+            cellsSeen.remove(c);
+        }
+    }
+
+    private void markAsLoop(Cell startCell, LinkedHashSet<Cell> cells) {
+        boolean startReached = false;
+
+        for (Cell c : cells) {
+            c.setInvalid(true);
+
+            if (c.getLoc().equals(startCell.getLoc())) {
+                startReached = true;
+            }
+
+            if (startReached) {
+                c.setVal(LoopValue.INSTANCE);
+            }
         }
     }
 

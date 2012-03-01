@@ -16,7 +16,7 @@ public class Cell implements Observer<Cell> {
 
     private Value val;
     private String expr;
-    private boolean inLoop;
+    private boolean alwaysInvalid;
 
     private Set<Cell> thisReferences = new HashSet<Cell>();
     private Set<Observer<Cell>> referencesMe = new HashSet<Observer<Cell>>();
@@ -26,7 +26,7 @@ public class Cell implements Observer<Cell> {
         this.loc = loc;
         this.setVal(null);
         this.expr = "";
-        this.setInLoop(false);
+        this.setInvalid(false);
     }
 
     public final Set<Cell> getReferences() {
@@ -37,12 +37,12 @@ public class Cell implements Observer<Cell> {
         return loc;
     }
 
-    public boolean isInLoop() {
-        return inLoop;
+    public boolean alwaysInvalid() {
+        return alwaysInvalid;
     }
 
-    public void setInLoop(boolean inLoop) {
-        this.inLoop = inLoop;
+    public void setInvalid(boolean alwaysInvalid) {
+        this.alwaysInvalid = alwaysInvalid;
     }
 
     public final Value getVal() {
@@ -66,23 +66,21 @@ public class Cell implements Observer<Cell> {
         this.expr = newExpr;
         setVal(new InvalidValue(newExpr));
 
-        if (!isInLoop()) {
-            addToInvalid();
+        addToInvalid();
 
-            Set<CellLocation> locs =
-                    ExpressionUtils.getReferencedLocations(newExpr);
+        Set<CellLocation> locs =
+                ExpressionUtils.getReferencedLocations(newExpr);
 
-            for (CellLocation l : locs) {
-                sheet.setExpression(l, sheet.getExpression(l));
+        for (CellLocation l : locs) {
+            sheet.setExpression(l, sheet.getExpression(l));
 
-                Cell c = sheet.getCellAt(l);
-                thisReferences.add(c);
-                c.referencesMe.add(this);
-            }
+            Cell c = sheet.getCellAt(l);
+            thisReferences.add(c);
+            c.referencesMe.add(this);
+        }
 
-            for (Observer<Cell> c : referencesMe) {
-                c.update(this);
-            }
+        for (Observer<Cell> c : referencesMe) {
+            c.update(this);
         }
     }
 
