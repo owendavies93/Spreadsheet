@@ -1,14 +1,12 @@
 package spreadsheet;
 
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import spreadsheet.api.CellLocation;
 import spreadsheet.api.ExpressionUtils;
 import spreadsheet.api.observer.Observer;
 import spreadsheet.api.value.InvalidValue;
-import spreadsheet.api.value.LoopValue;
 import spreadsheet.api.value.Value;
 
 public class Cell implements Observer<Cell> {
@@ -28,7 +26,7 @@ public class Cell implements Observer<Cell> {
         this.loc = loc;
         this.setVal(null);
         this.expr = "";
-        this.inLoop = false;
+        this.setInLoop(false);
     }
 
     public final Set<Cell> getReferences() {
@@ -39,16 +37,20 @@ public class Cell implements Observer<Cell> {
         return loc;
     }
 
+    public boolean isInLoop() {
+        return inLoop;
+    }
+
+    public void setInLoop(boolean inLoop) {
+        this.inLoop = inLoop;
+    }
+
     public final Value getVal() {
         return val;
     }
 
     public final void setVal(Value val) {
-        if (inLoop) {
-            this.val = LoopValue.INSTANCE;
-        } else {
-            this.val = val;
-        }
+        this.val = val;
     }
 
     public final String getExpr() {
@@ -62,13 +64,9 @@ public class Cell implements Observer<Cell> {
         thisReferences.clear();
 
         this.expr = newExpr;
-
-        LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
-        checkLoops(this, seen);
-
         setVal(new InvalidValue(newExpr));
 
-        if (!inLoop) {
+        if (!isInLoop()) {
             addToInvalid();
 
             Set<CellLocation> locs =
@@ -84,34 +82,6 @@ public class Cell implements Observer<Cell> {
 
             for (Observer<Cell> c : referencesMe) {
                 c.update(this);
-            }
-        }
-    }
-
-    private void checkLoops(Cell c, LinkedHashSet<Cell> seen) {
-        if (seen.contains(c)) {
-            markAsLoop(c, seen);
-        } else {
-            seen.add(c);
-            LinkedHashSet<Cell> children = sheet.getChildren(c);
-
-            for (Cell child : children) {
-                checkLoops(child, seen);
-            }
-            seen.remove(c);
-        }
-    }
-
-    private void markAsLoop(Cell cell, LinkedHashSet<Cell> seen) {
-        cell.inLoop = true;
-
-        boolean seenStart = false;
-        for (Cell c : seen) {
-            if (c.getLoc().equals(cell.getLoc())) {
-                seenStart = true;
-            }
-            if (seenStart) {
-                c.inLoop = true;
             }
         }
     }

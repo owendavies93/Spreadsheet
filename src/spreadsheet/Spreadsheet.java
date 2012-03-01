@@ -58,9 +58,16 @@ public class Spreadsheet implements SpreadsheetInterface {
         Iterator<Cell> i = invalid.iterator();
         while (i.hasNext()) {
             Cell c = i.next();
-            if (!ignore.contains(c) && c.getVal() != LoopValue.INSTANCE) {
-                recomputeCell(c);
+            checkCycle(c, new HashSet<Cell>());
+
+            if (!c.isInLoop()) {
+                if (!ignore.contains(c)) {
+                    recomputeCell(c);
+                }
+            } else {
+                c.setVal(LoopValue.INSTANCE);
             }
+
             i.remove();
         }
         ignore.clear();
@@ -89,6 +96,20 @@ public class Spreadsheet implements SpreadsheetInterface {
                 ignore.add(node);
                 q.remove(node);
             }
+        }
+    }
+
+    private void checkCycle(Cell c, Set<Cell> visited) {
+        if (visited.contains(c)) {
+            c.setInLoop(true);
+        } else {
+            visited.add(c);
+
+            for (Cell child : getChildren(c)) {
+                checkCycle(child, visited);
+            }
+
+            visited.remove(c);
         }
     }
 
@@ -127,7 +148,14 @@ public class Spreadsheet implements SpreadsheetInterface {
     }
 
     public final Cell getCellAt(CellLocation loc) {
-        return locations.get(loc);
+        if (locations.get(loc) == null) {
+            Cell c = new Cell(this, loc);
+            c.setVal(null);
+            locations.put(loc, c);
+            return c;
+        } else {
+            return locations.get(loc);
+        }
     }
 
     public final LinkedHashSet<Cell> getChildren(Cell c) {
