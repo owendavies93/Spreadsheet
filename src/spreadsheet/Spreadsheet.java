@@ -18,8 +18,6 @@ public class Spreadsheet implements SpreadsheetInterface {
 
     private Set<Cell> invalid = new HashSet<Cell>();
 
-    private Set<Cell> ignore = new HashSet<Cell>();
-
     @Override
     public void setExpression(CellLocation location, String expr) {
         if (getCellAt(location) != null) {
@@ -62,11 +60,7 @@ public class Spreadsheet implements SpreadsheetInterface {
         LinkedHashSet<Cell> seen = new LinkedHashSet<Cell>();
         checkLoops(c, seen);
         if (c.getVal() != LoopValue.INSTANCE) {
-            if (!ignore.contains(c)) {
-                c.setVal(new StringValue(c.getExpr()));
-            } else {
-                c.setVal(new InvalidValue(c.getExpr()));
-            }
+            c.setVal(new StringValue(c.getExpr()));
         }
     }
 
@@ -87,7 +81,6 @@ public class Spreadsheet implements SpreadsheetInterface {
 
         boolean seenStart = false;
         for (Cell c : cells) {
-            ignore.add(c); // not sure if this will "remove" cells from invalid
             if (c.getLoc().equals(startCell.getLoc())) {
                 seenStart = true;
             }
